@@ -1,9 +1,7 @@
-import pylab, os
+import pylab, os, math
 
 count = 0
-dt = 0
-t = 0.001
-t1 = 0
+img = 0
 
 
 class Body:
@@ -13,31 +11,27 @@ class Body:
         self.mass = mass
         self.size = size
 
-    # def face_the_wall(self):
-    #     return self.pos[0] <= 0
 
-
-def snapshot(bodies, output_dir, img):
-    global t, t1
-    t += dt
-    t1 += dt
-    if abs(t - 0.001) < 0.0005:
+def snapshot(bodies, output_dir, n):  # n - задает частоту кадров
+    global img
+    if img % n == 0:
         colors = ["r", "g"]
         pylab.subplots_adjust(left=0.10, right=0.90, top=0.90, bottom=0.10)
         pylab.gcf().set_size_inches(12, 6)
-        pylab.setp(pylab.gca(), xticks=[0, 2], yticks=[0, 1])
+        x = 2 if bodies[0].pos < 2 else math.ceil(bodies[0].pos)  # масштабирование
+        y = 1 if bodies[0].pos < 2 else math.ceil(bodies[0].pos)/2
+        pylab.setp(pylab.gca(), xticks=[0, x], yticks=[0, y])
         for b, c in zip(bodies, colors):
-            circle = pylab.Rectangle((b.pos, 0), b.size, b.size, color=c)
-            pylab.gca().add_patch(circle)
+            Rect = pylab.Rectangle((b.pos, 0), b.size, b.size, color=c)
+            pylab.gca().add_patch(Rect)
         pylab.text(0.7, 0.8, f'счётчик столкновений: {count}')
-        pylab.savefig(os.path.join(output_dir, f'{img}_{t1}.png'), transparent=False)
+        pylab.savefig(os.path.join(output_dir, f'{img}.png'), transparent=False)
         pylab.close()
-        t = 0
+    img += 1
 
 
-def move(bodies, dx):
-    global count, dt
-    dt = dx / max(abs(bodies[1].vel), abs(bodies[0].vel))
+def move(bodies, dt):
+    global count
     if bodies[1].pos <= 0:
         bodies[1].vel = -bodies[1].vel
         count += 1
